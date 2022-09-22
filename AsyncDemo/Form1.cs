@@ -13,6 +13,7 @@ namespace AsyncDemo
 {
     public partial class Form1 : Form
     {
+        private CancellationTokenSource cancellationTokenSource;
         public Form1()
         {
             InitializeComponent();
@@ -20,6 +21,10 @@ namespace AsyncDemo
 
         async Task<string> GetString()
         {
+            //instatiate cancelation token
+            cancellationTokenSource = new CancellationTokenSource();
+            var token = cancellationTokenSource.Token;
+
             string s = "";
 
             //start a background thread
@@ -28,6 +33,12 @@ namespace AsyncDemo
             {
                 for (int i = 0; i < 10; i++)
                 {
+                    if (token.IsCancellationRequested)
+                    {
+                        //break out of loop
+                        break;
+                    }
+
                     s += i;
 
                     //Run code on UI thread
@@ -51,6 +62,14 @@ namespace AsyncDemo
             string s = await GetString();
             label1.Text = s;
             progressBar1.Visible = false;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //cancel the background thread
+            //cancelation token
+            //.Cancel() method will set token.IsCancellationRequested) to true
+            cancellationTokenSource.Cancel();
         }
     }
 }
